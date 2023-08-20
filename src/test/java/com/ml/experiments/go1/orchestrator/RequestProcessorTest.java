@@ -7,8 +7,6 @@ import static org.mockito.Mockito.*;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import com.ml.experiments.go1.pipeline.model.Pipeline;
 
 public class RequestProcessorTest {
 
