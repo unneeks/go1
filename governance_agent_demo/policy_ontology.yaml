@@ -1,0 +1,72 @@
+# Policy Ontology — semantic type → required validations
+# Used by the deterministic policy checker to detect governance gaps.
+# Forbidden transformations are SQL patterns that violate the semantic contract.
+
+email:
+  required_validations:
+    - not_null
+    - format
+  forbidden_transformations:
+    - coalesce        # Masks null emails instead of surfacing root cause
+    - lower           # Can corrupt RFC 5322 case-sensitive local-parts
+  description: >
+    Email fields must always be present and structurally valid.
+    Null substitution with placeholder values is prohibited because it
+    hides upstream data collection failures from governance reporting.
+
+amount:
+  required_validations:
+    - numeric
+    - range
+  forbidden_transformations:
+    - cast_integer    # Truncates decimal precision in financial values
+    - coalesce        # Silently defaults missing rates/amounts to 0 or 1
+  description: >
+    Monetary and metric amount fields require decimal precision preservation
+    and explicit range guards. Silent defaults for missing exchange rates
+    or amounts are prohibited as they produce systematically incorrect values.
+
+id:
+  required_validations:
+    - uniqueness
+    - not_null
+  forbidden_transformations:
+    - coalesce        # Synthesises fallback IDs that corrupt uniqueness invariant
+    - concat_fallback # String-concatenated IDs without sequence uniqueness guarantee
+  description: >
+    Identifier fields are the primary key of business entities. Any
+    transformation that can produce duplicate or synthetic IDs without
+    guaranteed uniqueness violates the identifier contract.
+
+pii:
+  required_validations:
+    - masking
+  forbidden_transformations:
+    - plain_select    # Selecting PII columns without masking or tokenisation
+    - concat_pii      # Concatenating PII fields into a new plain-text column
+  description: >
+    Personally Identifiable Information must be masked, tokenised, or
+    encrypted before being materialised in analytical data products.
+    Plain-text PII in SELECT output is a policy violation regardless of
+    access controls applied at the table level.
+
+text:
+  required_validations:
+    - not_null
+  forbidden_transformations: []
+  description: General text fields require null checks.
+
+date:
+  required_validations:
+    - not_null
+    - format
+  forbidden_transformations:
+    - date_truncation  # Truncation to coarser granularity without explicit intent
+  description: Date fields require valid ISO format and must not be silently truncated.
+
+numeric:
+  required_validations:
+    - numeric
+  forbidden_transformations:
+    - cast_integer    # Integer cast silently truncates decimal numeric fields
+  description: Numeric fields must preserve their declared precision.
