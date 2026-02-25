@@ -1,3 +1,6 @@
 governance_agent_demo/**/__pycache__/
 governance_agent_demo/governance.db
+governance_agent_demo/governance.db-shm
+governance_agent_demo/governance.db-wal
 governance_web/backend/__pycache__/
+governance_web/frontend/node_modules/
